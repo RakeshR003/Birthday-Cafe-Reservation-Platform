@@ -4,6 +4,8 @@
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
+🔗 **Live Demo:** https://birthday-cafe-reservation-platform.onrender.com
+
 A Flask web app for booking themed birthday decorations at partner cafes.
 Three user roles, one shared codebase:
 
