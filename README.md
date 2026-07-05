@@ -1,6 +1,6 @@
 # Birthday Cafe — Reservation Platform
 
-![CI](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/RakeshR003/Birthday-Cafe-Reservation-Platform/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
@@ -11,7 +11,6 @@ Three user roles, one shared codebase:
 - **Decorators** — register, submit cafes and decoration packages for approval
 - **Admins** — approve/reject submissions, manage bookings, block time slots, configure site settings
 
-> Replace `YOUR_USERNAME/YOUR_REPO` in the badge URL above once this is pushed to GitHub.
 
 ## Features
 
