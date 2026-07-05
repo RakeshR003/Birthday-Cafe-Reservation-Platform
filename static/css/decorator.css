@@ -1,0 +1,16 @@
+/* Decorator portal — small overrides layered on top of main.css.
+   Most of the look (colors, cards, buttons) now comes from the shared theme;
+   this file only holds things unique to this role's screens. */
+
+.stats-card {
+    transition: transform 0.3s ease;
+}
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--ink-line);
+}

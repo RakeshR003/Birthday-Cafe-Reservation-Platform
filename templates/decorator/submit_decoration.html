@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Submit Decoration - Birthday Cafe</title>
+
+<!-- Bootstrap CSS + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+  <style>
+    /* Page theme — matches the rest of the site's dark brand palette */
+    :root {
+      --card-bg: var(--ink-soft, #241733);
+      --muted: var(--muted, #B7A6C3);
+      --accent: var(--raspberry, #E23E6B);
+      --accent-2: var(--marigold, #F3A93B);
+      --glass: rgba(255,255,255,0.06);
+    }
+    html,body{height:100%; margin:0;}
+    body {
+      background: var(--ink, #1B1023);
+      padding: 28px 12px;
+    }
+
+    .decorator-card {
+      background: var(--card-bg);
+      border: 1px solid var(--ink-line, rgba(251,243,230,0.1));
+      border-radius: 14px;
+      box-shadow: 0 18px 60px rgba(4,6,15,0.45);
+      overflow: hidden;
+      color: var(--cream, #FBF3E6);
+    }
+    .page-header {
+      background: linear-gradient(90deg, rgba(226,62,107,0.15), rgba(243,169,59,0.10));
+      padding: 18px;
+      border-bottom: 1px solid var(--ink-line, rgba(251,243,230,0.1));
+    }
+    .page-header h2 { margin:0; color: var(--cream, #FBF3E6); font-weight:800; }
+
+    .form-label.fw-semibold { color: var(--cream, #FBF3E6); }
+    .form-text.muted { color: var(--muted); }
+
+    /* media preview area */
+    #preview-container { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+    .preview-item {
+      width: 150px;
+      background: rgba(255,255,255,0.04);
+      border-radius:8px;
+      padding:8px;
+      box-shadow: 0 6px 18px rgba(8,10,20,0.2);
+      border: 1px solid var(--ink-line, rgba(251,243,230,0.1));
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      align-items:center;
+    }
+    .preview-item img, .preview-item video {
+      width: 100%;
+      height: 96px;
+      object-fit: cover;
+      border-radius:6px;
+      background: rgba(0,0,0,0.3);
+    }
+    .preview-meta { font-size:12px; color: var(--muted); text-align:center; word-break:break-word; }
+    .preview-note { font-size:11px; color:var(--muted); text-align:center; }
+
+    .hint-pill {
+      display:inline-flex; gap:8px; align-items:center;
+      padding:.35rem .6rem; border-radius:999px; background: rgba(255,255,255,0.06); color: var(--cream, #FBF3E6); font-weight:700;
+    }
+
+    .invalid-feedback.d-block { color:#ff8080; }
+
+    @media (max-width:768px) {
+      .preview-item { width: 45%; }
+    }
+  </style>
+</head>
+<body data-bs-theme="dark">
+  <nav class="navbar navbar-expand-lg mb-4 bg-success">
+    <div class="container">
+      <a class="navbar-brand text-white" href="{{ url_for('decorator_dashboard') }}">
+        <i class="bi bi-balloon-heart me-2"></i>Decorator Portal
+      </a>
+      <div class="navbar-nav ms-auto">
+        <a class="nav-link text-white" href="{{ url_for('decorator_dashboard') }}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+        <a class="nav-link text-white" href="{{ url_for('decorator_logout') }}"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-9">
+        <div class="decorator-card p-0">
+
+          <!-- header -->
+          <div class="page-header d-flex align-items-center justify-content-between px-4">
+            <div>
+              <h2>Submit New Decoration</h2>
+              <div class="text-muted small">Add your decoration theme — photos preferred, videos optional</div>
+            </div>
+            <div class="text-end">
+              <span class="hint-pill"><i class="bi bi-cloud-arrow-up me-1"></i> Upload & save</span>
+            </div>
+          </div>
+
+          <!-- body -->
+          <div class="p-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <form id="submit-form" method="POST" enctype="multipart/form-data" novalidate>
+              {{ form.hidden_tag() }}
+
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">{{ form.title.label.text }}</label>
+                  {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+                  {% for e in form.title.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">{{ form.price.label.text }}</label>
+                  <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    {{ form.price(class="form-control" + (" is-invalid" if form.price.errors else "")) }}
+                  </div>
+                  {% for e in form.price.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label fw-semibold">{{ form.description.label.text }}</label>
+                  {{ form.description(class="form-control", rows="4", placeholder="Describe your decoration theme, colors, style, etc.") }}
+                  {% for e in form.description.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">{{ form.cafe_id.label.text }}</label>
+                  {{ form.cafe_id(class="form-control" + (" is-invalid" if form.cafe_id.errors else "")) }}
+                  {% for e in form.cafe_id.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">{{ form.includes.label.text }}</label>
+                  {{ form.includes(class="form-control", rows="3", placeholder="Balloon Arch&#10;Fresh Flowers&#10;Custom Banner") }}
+                  <small class="form-text text-muted">Enter each item on a new line</small>
+                  {% for e in form.includes.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+              </div>
+
+              <hr class="my-4">
+
+              <!-- PHOTOS upload (multiple) -->
+              <div class="mb-4">
+                <label class="form-label fw-semibold">Photos (required — at least 1)</label>
+                <input id="photos-input" name="photos" class="form-control" type="file" accept="image/*" multiple>
+                <small class="form-text text-muted">
+                  📸 Upload up to <strong id="max-photos-label">6</strong> images (JPG, PNG, GIF, WebP). Max <strong id="max-photo-size-label">12MB</strong> each.
+                </small>
+                <div id="photos-error" class="invalid-feedback d-block" style="display:none;"></div>
+
+                <div id="photos-preview" class="mt-3">
+                  <div class="alert alert-info py-2 mb-2">
+                    <strong>Selected Photos:</strong> <span id="photos-count">0</span>/<span id="max-photos-count">6</span>
+                  </div>
+                  <div id="photos-preview-container" class="d-flex flex-wrap gap-2"></div>
+                </div>
+              </div>
+
+              <!-- VIDEOS upload (optional, separate) -->
+              <div class="mb-4">
+                <label class="form-label fw-semibold">Videos (optional)</label>
+                <input id="videos-input" name="videos" class="form-control" type="file" accept="video/mp4,video/webm,video/ogg,video/*" multiple>
+                <small class="form-text text-muted">
+                  🎥 Upload up to <strong id="max-videos-label">3</strong> videos (MP4, MOV, WEBM, AVI, MKV). Max <strong id="max-video-size-label">80MB</strong> each.
+                </small>
+                <div id="videos-error" class="invalid-feedback d-block" style="display:none;"></div>
+
+                <div id="videos-preview" class="mt-3">
+                  <div class="alert alert-light py-2 mb-2">
+                    <strong>Selected Videos:</strong> <span id="videos-count">0</span>/<span id="max-videos-count">3</span>
+                  </div>
+                  <div id="videos-preview-container" class="d-flex flex-wrap gap-2"></div>
+                </div>
+              </div>
+
+              <!-- Global notes -->
+              <div class="mb-3">
+                <small class="text-muted">
+                  Tip: Prefer MP4 (H.264) encoded videos for best compatibility. If the server rejects large videos, re-encode or upload a trimmed version.
+                </small>
+              </div>
+
+              <div class="d-grid gap-2">
+                {{ form.submit(class="btn btn-primary btn-lg") }}
+                <a href="{{ url_for('decorator_dashboard') }}" class="btn btn-outline-secondary"> <i class="bi bi-arrow-left me-2"></i>Back to Dashboard</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Boot JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+  // ---------------- Config (tweak as needed) ----------------
+  const MAX_PHOTOS = 6;
+  const MAX_PHOTO_SIZE = 12 * 1024 * 1024; // 12 MB
+  const MAX_VIDEOS = 3;
+  const MAX_VIDEO_SIZE = 80 * 1024 * 1024; // 80 MB
+
+  // Allowed MIME prefixes/extensions (extra guard)
+  const PHOTO_TYPES = ['image/jpeg','image/jpg','image/png','image/gif','image/webp'];
+  const VIDEO_TYPES = ['video/mp4','video/mov','video/quicktime','video/webm','video/x-matroska','video/avi','video/x-msvideo'];
+
+  // ---------------- Helpers ----------------
+  function bytesToMB(n){ return (n/1024/1024).toFixed(2) + ' MB'; }
+  function createPreviewItem(name, sizeReadable, node){ 
+    const wrapper = document.createElement('div');
+    wrapper.className = 'preview-item';
+    const meta = document.createElement('div');
+    meta.className = 'preview-meta';
+    meta.innerText = name;
+    const note = document.createElement('div');
+    note.className = 'preview-note';
+    note.innerText = sizeReadable;
+    wrapper.appendChild(node);
+    wrapper.appendChild(meta);
+    wrapper.appendChild(note);
+    return wrapper;
+  }
+
+  // ---------------- Photos handling ----------------
+  const photosInput = document.getElementById('photos-input');
+  const photosPreviewContainer = document.getElementById('photos-preview-container');
+  const photosCountEl = document.getElementById('photos-count');
+  const maxPhotosCountEl = document.getElementById('max-photos-count');
+  const photosError = document.getElementById('photos-error');
+  maxPhotosCountEl.textContent = MAX_PHOTOS;
+  document.getElementById('max-photos-label').innerText = MAX_PHOTOS;
+  document.getElementById('max-photo-size-label').innerText = bytesToMB(MAX_PHOTO_SIZE);
+
+  photosInput.addEventListener('change', (e) => {
+    photosError.style.display = 'none';
+    photosPreviewContainer.innerHTML = '';
+    const files = Array.from(e.target.files || []);
+    photosCountEl.textContent = files.length;
+
+    if(files.length === 0){
+      photosError.style.display = 'none';
+      return;
+    }
+    if(files.length > MAX_PHOTOS){
+      photosError.style.display = 'block';
+      photosError.innerText = `Maximum ${MAX_PHOTOS} photos allowed. You selected ${files.length}.`;
+      photosInput.value = '';
+      photosCountEl.textContent = '0';
+      return;
+    }
+
+    // iterate and validate
+    for (const f of files){
+      // type check
+      if(!PHOTO_TYPES.includes(f.type)){
+        photosError.style.display = 'block';
+        photosError.innerText = `File "${f.name}" is not a supported image type.`;
+        photosInput.value = '';
+        photosPreviewContainer.innerHTML = '';
+        photosCountEl.textContent = '0';
+        return;
+      }
+      if(f.size > MAX_PHOTO_SIZE){
+        photosError.style.display = 'block';
+        photosError.innerText = `File "${f.name}" is too large (${bytesToMB(f.size)}). Max ${bytesToMB(MAX_PHOTO_SIZE)} allowed.`;
+        photosInput.value = '';
+        photosPreviewContainer.innerHTML = '';
+        photosCountEl.textContent = '0';
+        return;
+      }
+
+      // create img preview
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(f);
+      img.alt = f.name;
+      img.loading = 'lazy';
+      const item = createPreviewItem(f.name, bytesToMB(f.size), img);
+      photosPreviewContainer.appendChild(item);
+
+      // revoke object URL later
+      img.addEventListener('load', () => { URL.revokeObjectURL(img.src); });
+    }
+  });
+
+  // ---------------- Videos handling ----------------
+  const videosInput = document.getElementById('videos-input');
+  const videosPreviewContainer = document.getElementById('videos-preview-container');
+  const videosCountEl = document.getElementById('videos-count');
+  document.getElementById('max-videos-count').textContent = MAX_VIDEOS;
+  document.getElementById('max-videos-label').innerText = MAX_VIDEOS;
+  document.getElementById('max-video-size-label').innerText = bytesToMB(MAX_VIDEO_SIZE);
+
+  videosInput.addEventListener('change', (e) => {
+    document.getElementById('videos-error').style.display = 'none';
+    videosPreviewContainer.innerHTML = '';
+    const files = Array.from(e.target.files || []);
+    videosCountEl.textContent = files.length;
+
+    if(files.length === 0){
+      return;
+    }
+    if(files.length > MAX_VIDEOS){
+      const el = document.getElementById('videos-error');
+      el.style.display = 'block';
+      el.innerText = `Maximum ${MAX_VIDEOS} videos allowed. You selected ${files.length}.`;
+      videosInput.value = '';
+      videosPreviewContainer.innerHTML = '';
+      videosCountEl.textContent = '0';
+      return;
+    }
+
+    for (const f of files){
+      // Looser MIME check for videos because browser MIME strings vary
+      if(!VIDEO_TYPES.includes(f.type) && !f.type.startsWith('video')){
+        const el = document.getElementById('videos-error');
+        el.style.display = 'block';
+        el.innerText = `File "${f.name}" doesn't look like a supported video file.`;
+        videosInput.value = '';
+        videosPreviewContainer.innerHTML = '';
+        videosCountEl.textContent = '0';
+        return;
+      }
+      if(f.size > MAX_VIDEO_SIZE){
+        const el = document.getElementById('videos-error');
+        el.style.display = 'block';
+        el.innerText = `File "${f.name}" is too large (${bytesToMB(f.size)}). Max ${bytesToMB(MAX_VIDEO_SIZE)} allowed.`;
+        videosInput.value = '';
+        videosPreviewContainer.innerHTML = '';
+        videosCountEl.textContent = '0';
+        return;
+      }
+
+      // Create small video preview element (no autoplay)
+      const video = document.createElement('video');
+      video.src = URL.createObjectURL(f);
+      video.controls = true;
+      video.preload = 'metadata';
+      video.style.maxHeight = '96px';
+      video.addEventListener('loadedmetadata', () => {
+        // we can show duration if useful (optional)
+        // const dur = Math.round(video.duration);
+      });
+      const item = createPreviewItem(f.name, bytesToMB(f.size), video);
+      videosPreviewContainer.appendChild(item);
+
+      video.addEventListener('loadeddata', () => { URL.revokeObjectURL(video.src); });
+    }
+  });
+
+  // ---------------- Final form submit: ensure at least one photo present ----------------
+  const theForm = document.getElementById('submit-form');
+  theForm.addEventListener('submit', (ev) => {
+    const photosSelected = (photosInput.files && photosInput.files.length > 0);
+    if(!photosSelected){
+      ev.preventDefault();
+      const el = document.getElementById('photos-error');
+      el.style.display = 'block';
+      el.innerText = 'Please add at least one photo of the decoration.';
+      photosInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    // If you want to additionally compress or warn about video durations you can handle here
+  });
+  </script>
+
+  <!-- END -->
+</body>
+</html>

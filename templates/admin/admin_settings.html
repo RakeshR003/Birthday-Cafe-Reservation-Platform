@@ -1,0 +1,219 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block title %}Settings - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold">
+            <i class="bi bi-gear me-2"></i>System Settings
+        </h1>
+    </div>
+
+    <div class="row">
+        <!-- General Settings -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-sliders me-2"></i>General Settings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="settingsForm">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.site_name.label(class="form-label fw-semibold") }}
+                            {{ form.site_name(class="form-control") }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.admin_email.label(class="form-label fw-semibold") }}
+                            {{ form.admin_email(class="form-control") }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.booking_advance_days.label(class="form-label fw-semibold") }}
+                                    {{ form.booking_advance_days(class="form-control") }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.max_guests_per_booking.label(class="form-label fw-semibold") }}
+                                    {{ form.max_guests_per_booking(class="form-control") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Information & Tools -->
+        <div class="col-lg-6">
+            <!-- System Stats -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-info-circle me-2"></i>System Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <span>Total Bookings</span>
+                            <span class="badge bg-primary">{{ settings.total_bookings or 0 }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <span>Active Decorations</span>
+                            <span class="badge bg-success">{{ settings.total_decorations or 0 }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <span>Registered Cafes</span>
+                            <span class="badge bg-warning">{{ settings.total_cafes or 0 }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <span>System Version</span>
+                            <span class="text-muted">1.0.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Tools -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-tools me-2"></i>Quick Tools
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary btn-sm text-start" onclick="clearCache()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Clear Cache
+                        </button>
+                        <button class="btn btn-outline-success btn-sm text-start" onclick="backupDatabase()">
+                            <i class="bi bi-download me-2"></i>Backup Database
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm text-start" onclick="showResetModal()">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Reset Demo Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Settings -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-megaphone me-2"></i>Announcement Settings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Site-wide Announcement</label>
+                        <textarea class="form-control" id="announcementText" rows="3" placeholder="Enter announcement message...">{{ settings.announcement_message or '' }}</textarea>
+                        <div class="form-text">This message will be displayed to all users on the homepage.</div>
+                    </div>
+                    <button class="btn btn-success" onclick="updateAnnouncement()">
+                        <i class="bi bi-save me-1"></i>Update Announcement
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Modal -->
+<div class="modal fade" id="resetModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Reset Demo Data
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger fw-semibold">Warning: This action cannot be undone!</p>
+                <p>This will reset all demo data including:</p>
+                <ul>
+                    <li>All bookings</li>
+                    <li>All decorations (except approved ones)</li>
+                    <li>All cafes (except approved ones)</li>
+                    <li>All decorator accounts</li>
+                </ul>
+                <p>Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="resetDemoData()">Reset Demo Data</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateAnnouncement() {
+    const message = document.getElementById('announcementText').value;
+    
+    fetch('/api/admin/announcement', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({message: message})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Announcement updated successfully!');
+        }
+    });
+}
+
+function clearCache() {
+    if (confirm('Clear all system cache?')) {
+        alert('Cache cleared successfully!');
+    }
+}
+
+function backupDatabase() {
+    alert('Database backup would be initiated');
+}
+
+function showResetModal() {
+    new bootstrap.Modal(document.getElementById('resetModal')).show();
+}
+
+function resetDemoData() {
+    if (confirm('Are you absolutely sure? This will delete all demo data!')) {
+        fetch('/api/admin/reset-demo', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Demo data reset successfully!');
+                bootstrap.Modal.getInstance(document.getElementById('resetModal')).hide();
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

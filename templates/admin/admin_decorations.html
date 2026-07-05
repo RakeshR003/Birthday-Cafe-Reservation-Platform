@@ -1,0 +1,398 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block title %}Manage Decorations - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold">
+            <i class="bi bi-stars me-2"></i>Manage Decorations
+        </h1>
+        <div class="btn-group">
+            <button class="btn btn-primary btn-sm" onclick="showAddDecorationModal()">
+                <i class="bi bi-plus-circle me-1"></i>Add Decoration
+            </button>
+        </div>
+    </div>
+
+    <!-- Status Tabs -->
+    <ul class="nav nav-tabs mb-4" id="statusTabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#all">All Decorations</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#pending">
+                Pending
+                {% set pending_count = decorations|selectattr('status', 'equalto', 'pending')|list|length %}
+                {% if pending_count > 0 %}
+                <span class="badge bg-danger">{{ pending_count }}</span>
+                {% endif %}
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#approved">Approved</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#featured">Featured</a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- All Decorations -->
+        <div class="tab-pane fade show active" id="all">
+            <div class="row">
+                {% for decoration in decorations %}
+                <div class="col-xl-4 col-lg-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="position-relative">
+                            <img src="{{ media_url(decoration.get_first_image()) or 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400' }}" 
+                                 class="card-img-top" alt="{{ decoration.title }}" style="height: 200px; object-fit: cover;">
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge bg-{{ decoration.get_status_badge() }}">{{ decoration.status|title }}</span>
+                                {% if decoration.featured %}
+                                <span class="badge bg-warning">Featured</span>
+                                {% endif %}
+                                {% if decoration.discount_percent > 0 %}
+                                <span class="badge bg-success">{{ decoration.discount_percent }}% OFF</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ decoration.title }}</h5>
+                            <p class="card-text text-muted small">{{ decoration.description[:100] }}...</p>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong class="text-primary">₹{{ "%.0f"|format(decoration.get_current_price()) }}</strong>
+                                    {% if decoration.discount_percent > 0 %}
+                                    <small class="text-muted text-decoration-line-through ms-1">₹{{ "%.0f"|format(decoration.price) }}</small>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">{{ decoration.cafe.name }}</small>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    By: {{ decoration.created_by_user.name if decoration.created_by_user else 'System' }}
+                                </small>
+                                <div class="btn-group btn-group-sm">
+                                    {% if decoration.status == 'pending' %}
+                                    <button class="btn btn-success btn-sm" onclick="approveDecoration({{ decoration.id }})">
+                                        <i class="bi bi-check-lg"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="rejectDecoration({{ decoration.id }})">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                    {% endif %}
+                                    <button class="btn btn-outline-primary btn-sm" onclick="editDecoration({{ decoration.id }})">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-info btn-sm" onclick="manageDiscount({{ decoration.id }})">
+                                        <i class="bi bi-percent"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Pending Decorations -->
+        <div class="tab-pane fade" id="pending">
+            <div class="row">
+                {% for decoration in decorations %}
+                    {% if decoration.status == 'pending' %}
+                    <div class="col-xl-4 col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="position-relative">
+                                <img src="{{ media_url(decoration.get_first_image()) or 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400' }}" 
+                                     class="card-img-top" alt="{{ decoration.title }}" style="height: 200px; object-fit: cover;">
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% if decoration.featured %}
+                                    <span class="badge bg-warning">Featured</span>
+                                    {% endif %}
+                                    {% if decoration.discount_percent > 0 %}
+                                    <span class="badge bg-success">{{ decoration.discount_percent }}% OFF</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ decoration.title }}</h5>
+                                <p class="card-text text-muted small">{{ decoration.description[:100] }}...</p>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <strong class="text-primary">₹{{ "%.0f"|format(decoration.get_current_price()) }}</strong>
+                                        {% if decoration.discount_percent > 0 %}
+                                        <small class="text-muted text-decoration-line-through ms-1">₹{{ "%.0f"|format(decoration.price) }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">{{ decoration.cafe.name }}</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        By: {{ decoration.created_by_user.name if decoration.created_by_user else 'System' }}
+                                    </small>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-success btn-sm" onclick="approveDecoration({{ decoration.id }})">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="rejectDecoration({{ decoration.id }})">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                        <button class="btn btn-outline-primary btn-sm" onclick="editDecoration({{ decoration.id }})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-info btn-sm" onclick="manageDiscount({{ decoration.id }})">
+                                            <i class="bi bi-percent"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-check-circle text-muted" style="font-size: 3rem;"></i>
+                    <h5 class="text-muted mt-3">No Pending Decorations</h5>
+                    <p class="text-muted">All decorations have been approved.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Approved Decorations -->
+        <div class="tab-pane fade" id="approved">
+            <div class="row">
+                {% for decoration in decorations %}
+                    {% if decoration.status == 'approved' %}
+                    <div class="col-xl-4 col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="position-relative">
+                                <img src="{{ media_url(decoration.get_first_image()) or 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400' }}" 
+                                     class="card-img-top" alt="{{ decoration.title }}" style="height: 200px; object-fit: cover;">
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    <span class="badge bg-success">Approved</span>
+                                    {% if decoration.featured %}
+                                    <span class="badge bg-warning">Featured</span>
+                                    {% endif %}
+                                    {% if decoration.discount_percent > 0 %}
+                                    <span class="badge bg-success">{{ decoration.discount_percent }}% OFF</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ decoration.title }}</h5>
+                                <p class="card-text text-muted small">{{ decoration.description[:100] }}...</p>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <strong class="text-primary">₹{{ "%.0f"|format(decoration.get_current_price()) }}</strong>
+                                        {% if decoration.discount_percent > 0 %}
+                                        <small class="text-muted text-decoration-line-through ms-1">₹{{ "%.0f"|format(decoration.price) }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">{{ decoration.cafe.name }}</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        By: {{ decoration.created_by_user.name if decoration.created_by_user else 'System' }}
+                                    </small>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary btn-sm" onclick="editDecoration({{ decoration.id }})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-info btn-sm" onclick="manageDiscount({{ decoration.id }})">
+                                            <i class="bi bi-percent"></i>
+                                        </button>
+                                        <button class="btn btn-outline-warning btn-sm" onclick="toggleFeature({{ decoration.id }})">
+                                            <i class="bi bi-star"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Featured Decorations -->
+        <div class="tab-pane fade" id="featured">
+            <div class="row">
+                {% for decoration in decorations %}
+                    {% if decoration.featured %}
+                    <div class="col-xl-4 col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="position-relative">
+                                <img src="{{ media_url(decoration.get_first_image()) or 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400' }}" 
+                                     class="card-img-top" alt="{{ decoration.title }}" style="height: 200px; object-fit: cover;">
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    <span class="badge bg-{{ decoration.get_status_badge() }}">{{ decoration.status|title }}</span>
+                                    <span class="badge bg-warning">Featured</span>
+                                    {% if decoration.discount_percent > 0 %}
+                                    <span class="badge bg-success">{{ decoration.discount_percent }}% OFF</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ decoration.title }}</h5>
+                                <p class="card-text text-muted small">{{ decoration.description[:100] }}...</p>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <strong class="text-primary">₹{{ "%.0f"|format(decoration.get_current_price()) }}</strong>
+                                        {% if decoration.discount_percent > 0 %}
+                                        <small class="text-muted text-decoration-line-through ms-1">₹{{ "%.0f"|format(decoration.price) }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">{{ decoration.cafe.name }}</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        By: {{ decoration.created_by_user.name if decoration.created_by_user else 'System' }}
+                                    </small>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary btn-sm" onclick="editDecoration({{ decoration.id }})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-info btn-sm" onclick="manageDiscount({{ decoration.id }})">
+                                            <i class="bi bi-percent"></i>
+                                        </button>
+                                        <button class="btn btn-outline-warning btn-sm" onclick="toggleFeature({{ decoration.id }})">
+                                            <i class="bi bi-star-fill"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-star text-muted" style="font-size: 3rem;"></i>
+                    <h5 class="text-muted mt-3">No Featured Decorations</h5>
+                    <p class="text-muted">Mark decorations as featured to show them here.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Discount Modal -->
+<div class="modal fade" id="discountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Manage Discount & Features</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="discountForm">
+                    <input type="hidden" id="decorationId">
+                    <div class="mb-3">
+                        <label class="form-label">Discount Percentage</label>
+                        <input type="number" class="form-control" id="discountPercent" min="0" max="100" value="0">
+                        <div class="form-text">Set 0 to remove discount</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="isFeatured">
+                            <label class="form-check-label" for="isFeatured">
+                                Feature this decoration on homepage
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="saveDiscount()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function approveDecoration(id) {
+    if (confirm('Are you sure you want to approve this decoration?')) {
+        fetch(`/api/admin/decorations/${id}/approve`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+
+function rejectDecoration(id) {
+    if (confirm('Are you sure you want to reject this decoration?')) {
+        fetch(`/api/admin/decorations/${id}/reject`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+
+function manageDiscount(id) {
+    document.getElementById('decorationId').value = id;
+    // In real app, fetch current values
+    new bootstrap.Modal(document.getElementById('discountModal')).show();
+}
+
+function saveDiscount() {
+    const id = document.getElementById('decorationId').value;
+    const discount = document.getElementById('discountPercent').value;
+    const featured = document.getElementById('isFeatured').checked;
+
+    fetch(`/api/admin/decorations/${id}/discount`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            discount_percent: parseInt(discount),
+            is_featured: featured
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('discountModal')).hide();
+            location.reload();
+        }
+    });
+}
+
+function toggleFeature(id) {
+    fetch(`/api/admin/decorations/${id}/toggle-feature`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+
+function editDecoration(id) {
+    alert(`Edit decoration ${id} - functionality to be implemented`);
+}
+
+function showAddDecorationModal() {
+    alert('Add decoration modal would open here');
+}
+</script>
+{% endblock %}

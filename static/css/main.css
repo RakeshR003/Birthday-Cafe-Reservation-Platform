@@ -1,0 +1,251 @@
+/* =====================================================
+   Birthday Cafe — shared design system
+   One source of truth for color, type and components.
+   Linked from: layout.html, admin_layout.html, decorator_layout.html
+   (home.html, book.html, decoration_detail.html, booking_confirm.html,
+   decorator/* and admin/* all inherit this through those layouts.)
+   ===================================================== */
+
+:root {
+    /* ---- Palette: warm, after-dark birthday party ---- */
+    --ink: #1B1023;              /* page background */
+    --ink-soft: #241733;         /* cards / panels */
+    --ink-line: rgba(251, 243, 230, 0.10); /* hairline borders on dark */
+    --cream: #FBF3E6;            /* primary text on dark */
+    --muted: #B7A6C3;            /* secondary text on dark */
+
+    --raspberry: #E23E6B;        /* primary accent */
+    --raspberry-deep: #B22753;   /* accent, darker */
+    --marigold: #F3A93B;         /* secondary accent (candlelight gold) */
+    --brand-grad: linear-gradient(135deg, var(--raspberry) 0%, var(--raspberry-deep) 55%, var(--marigold) 100%);
+
+    --success: #3FBF7F;
+    --danger: #E25555;
+    --warning: var(--marigold);
+
+    --radius: 18px;
+    --radius-sm: 10px;
+    --shadow-soft: 0 10px 30px -10px rgba(0, 0, 0, 0.45);
+    --shadow-glow: 0 0 30px -6px rgba(226, 62, 107, 0.45);
+
+    --font-display: 'Fraunces', 'Georgia', serif;
+    --font-body: 'Plus Jakarta Sans', -apple-system, system-ui, sans-serif;
+}
+
+/* ---- Base ---- */
+body {
+    background-color: var(--ink);
+    color: var(--cream);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+a { color: var(--raspberry); }
+a:hover { color: var(--marigold); }
+::selection { background: var(--raspberry); color: var(--cream); }
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---- Announcement bar ---- */
+.announcement-bar {
+    background: var(--brand-grad);
+    padding: 8px 0;
+    font-size: 0.85rem;
+    color: var(--cream);
+}
+.announcement-bar a { color: var(--cream) !important; text-decoration: underline; }
+
+/* ---- Navigation (glass) ---- */
+.navbar {
+    background: rgba(27, 16, 35, 0.85) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--ink-line);
+}
+.navbar-brand { color: var(--cream) !important; font-family: var(--font-display); font-weight: 700; }
+.nav-link { color: var(--muted) !important; transition: color 0.2s; }
+.nav-link:hover { color: var(--cream) !important; }
+.navbar-toggler { border-color: var(--ink-line); }
+.navbar-toggler-icon { filter: invert(1); }
+
+/* ---- Buttons ---- */
+.btn-glow, .btn-primary {
+    background: var(--brand-grad) !important;
+    border: none;
+    color: var(--cream) !important;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.btn-glow:hover, .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+    color: var(--cream) !important;
+}
+.btn-outline-primary {
+    border: 2px solid var(--raspberry);
+    color: var(--raspberry);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    background: transparent;
+}
+.btn-outline-primary:hover {
+    background: var(--brand-grad);
+    border-color: transparent;
+    color: var(--cream);
+}
+.btn-outline-light:hover { color: var(--ink); }
+
+/* ---- Forms ---- */
+.form-control, .form-select {
+    background-color: var(--ink-soft);
+    color: var(--cream);
+    border: 2px solid var(--ink-line);
+    border-radius: var(--radius-sm);
+    padding: 0.7rem 1rem;
+    transition: all 0.2s ease;
+}
+.form-control::placeholder { color: var(--muted); }
+.form-control:focus, .form-select:focus {
+    background-color: var(--ink-soft);
+    color: var(--cream);
+    border-color: var(--raspberry);
+    box-shadow: 0 0 0 3px rgba(226, 62, 107, 0.18);
+}
+.form-select option { color: #000; }
+.form-label { color: var(--cream); font-weight: 600; font-size: 0.9rem; }
+
+/* ---- Cards / panels used across pages ---- */
+.glass-panel, .deco-card, .decoration-card, .card {
+    background: var(--ink-soft);
+    border: 1px solid var(--ink-line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    color: var(--cream);
+}
+.deco-card, .decoration-card {
+    overflow: hidden;
+    transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.35s ease;
+}
+.deco-card:hover, .decoration-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-glow);
+}
+.card-img-wrapper { overflow: hidden; height: 240px; position: relative; }
+.card-img-wrapper img { transition: transform 0.6s ease; height: 100%; width: 100%; object-fit: cover; }
+.deco-card:hover .card-img-wrapper img, .decoration-card:hover .card-img-wrapper img { transform: scale(1.08); }
+
+.card-header, .card-footer {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: var(--ink-line);
+}
+/* Bootstrap's colored header utilities (bg-success/bg-danger/bg-primary) should
+   keep their own color even though .card-header above sets a default */
+.card-header.bg-success, .card-header.bg-danger, .card-header.bg-primary,
+.card-header.bg-warning, .card-header.bg-info {
+    border-color: transparent;
+}
+
+/* ---- Badges / alerts ---- */
+.badge { font-size: 0.7rem; font-weight: 600; padding: 0.35em 0.65em; }
+.alert { border: none; border-radius: var(--radius-sm); border-left: 4px solid; }
+.alert-success { border-left-color: var(--success); }
+.alert-danger { border-left-color: var(--danger); }
+
+/* ---- Hero blobs (used by home.html) ---- */
+.blob {
+    position: absolute;
+    filter: blur(80px);
+    z-index: -1;
+    opacity: 0.45;
+    animation: float 10s infinite alternate ease-in-out;
+}
+.blob-1 { top: 0; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(var(--raspberry-deep), transparent 70%); }
+.blob-2 { bottom: 0; right: -10%; width: 60vw; height: 60vw; background: radial-gradient(var(--marigold), transparent 70%); animation-delay: -5s; }
+@keyframes float {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(30px, 50px) rotate(10deg); }
+}
+.text-gradient {
+    background: var(--brand-grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ---- Signature element: bunting divider ----
+   A row of party pennant flags, alternating raspberry/marigold.
+   Used at section breaks — literal party bunting, not a generic rule. */
+.bunting-divider {
+    height: 22px;
+    width: 100%;
+    background-image:
+        linear-gradient(135deg, var(--raspberry) 25%, transparent 25.5%),
+        linear-gradient(-135deg, var(--marigold) 25%, transparent 25.5%);
+    background-size: 28px 22px;
+    background-position: 0 0, 14px 0;
+    background-repeat: repeat-x;
+    opacity: 0.9;
+}
+
+/* ---- Card-tint background utility (used by flash alerts / summary cards) ---- */
+.bg-card { background-color: var(--ink-soft) !important; }
+
+/* ---- Footer ---- */
+footer { background-color: var(--ink-soft) !important; border-top: 1px solid var(--ink-line); color: var(--muted) !important; }
+footer h5, footer h6 { color: var(--cream) !important; font-family: var(--font-display); }
+footer a { color: var(--muted) !important; transition: color 0.2s; }
+footer a:hover { color: var(--cream) !important; }
+.social-links a {
+    font-size: 1.25rem; display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.06);
+}
+.social-links a:hover { background: var(--brand-grad); }
+
+/* ---- Back to top ---- */
+.back-to-top {
+    position: fixed; bottom: 20px; right: 20px; z-index: 999;
+    width: 48px; height: 48px; border-radius: 50%;
+    display: none; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-soft);
+}
+.back-to-top.show { display: flex; }
+
+/* ---- Dropdowns ---- */
+.dropdown-menu { background: var(--ink-soft); border: 1px solid var(--ink-line); border-radius: var(--radius-sm); box-shadow: var(--shadow-soft); }
+.dropdown-item { color: var(--cream); border-radius: 8px; }
+.dropdown-item:hover { background: var(--brand-grad); color: var(--cream); }
+
+/* ---- Fallback role-portal navbars (decorator/admin use their own bg-* utility classes) ---- */
+.decorator-portal, .admin-portal { background-color: var(--ink); color: var(--cream); min-height: 100vh; }
+.decorator-portal .card, .admin-portal .card { background: var(--ink-soft); color: var(--cream); border: 1px solid var(--ink-line); }
+.decorator-portal .navbar.bg-success, .navbar.bg-success {
+    background: linear-gradient(135deg, var(--raspberry) 0%, var(--raspberry-deep) 100%) !important;
+}
+.admin-portal .navbar.bg-dark { background: var(--ink-soft) !important; border-bottom: 1px solid var(--ink-line); }
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .deco-card:hover, .decoration-card:hover { transform: translateY(-4px); }
+    .back-to-top { bottom: 16px; right: 16px; width: 44px; height: 44px; }
+}
+
+/* ---- Keyboard focus visibility ---- */
+a:focus-visible, button:focus-visible, .btn:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--marigold);
+    outline-offset: 2px;
+}
+
+/* ---- Print ---- */
+@media print {
+    .navbar, footer, .back-to-top, .announcement-bar { display: none !important; }
+}

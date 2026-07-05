@@ -1,0 +1,344 @@
+{% extends "layout.html" %}
+
+{% block title %}Book {{ decoration.title }} - Birthday Cafe{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
+<style>
+/* Page-specific styles only — shared tokens/nav/buttons/forms live in main.css */
+
+/* Ambient blob, unique treatment for the booking page */
+body::before {
+    content: '';
+    position: fixed;
+    top: -100px;
+    left: -100px;
+    width: 300px;
+    height: 300px;
+    background: var(--raspberry);
+    border-radius: 50%;
+    filter: blur(150px);
+    opacity: 0.25;
+    animation: blob-move 15s infinite alternate;
+    z-index: -1;
+}
+@keyframes blob-move {
+    from { transform: translate(0, 0) scale(1); }
+    to { transform: translate(40vw, 40vh) scale(1.2); }
+}
+
+/* Glassmorphism Card Style */
+.cyber-card {
+    background-color: var(--ink-soft);
+    border: 1px solid var(--ink-line);
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.cyber-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-glow);
+}
+
+.text-muted, .small-muted { color: var(--muted) !important; }
+.form-label.fw-semibold { color: var(--cream) !important; font-weight: 600 !important; }
+
+/* Primary Accent Button (Confirm Booking) */
+.btn-accent {
+    background: var(--brand-grad);
+    border: none;
+    color: var(--cream);
+    font-weight: 700;
+    padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 25px rgba(226, 62, 107, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.btn-accent:hover {
+    box-shadow: 0 10px 30px rgba(226, 62, 107, 0.5);
+    transform: translateY(-2px);
+    color: var(--cream);
+}
+.btn-accent::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--brand-grad);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 0.75rem;
+    z-index: 0;
+}
+.btn-accent:hover::after { opacity: 0.15; }
+.btn-accent > i { z-index: 1; position: relative; }
+
+/* Summary Image */
+.decoration-media-box {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    background: var(--ink-soft);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+.decoration-media-box:hover { transform: scale(1.02); }
+
+/* Back Button */
+.btn-back { color: var(--muted); transition: color 0.3s; }
+.btn-back:hover { color: var(--raspberry); }
+
+.sticky-summary { top: 2rem; }
+
+.inclusion-item { padding: 0.5rem; border-radius: 0.5rem; transition: background-color 0.3s; }
+.inclusion-item:hover { background-color: rgba(226, 62, 107, 0.12); }
+
+@media (max-width: 991px) {
+    .decoration-media-box { height: 250px; }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+<script>
+    AOS.init({
+        duration: 800,
+        once: true,
+        easing: 'ease-in-out'
+    });
+    
+    Fancybox.bind("[data-fancybox]", {
+        // Custom options
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ensure date field id exists and sets min date
+        const dateEl = document.getElementById('date');
+        if (dateEl) {
+            const today = new Date().toISOString().split('T')[0];
+            dateEl.min = today;
+        }
+
+        // client validation UX
+        const form = document.getElementById('bookingForm');
+        form.addEventListener('submit', function(e) {
+            // Let WTForms server-side catch final errors — this is just UX
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+                form.classList.add('was-validated');
+                // scroll to first invalid
+                const firstInvalid = form.querySelector('.is-invalid, :invalid');
+                if (firstInvalid) firstInvalid.scrollIntoView({behavior:'smooth', block:'center'});
+            }
+        }, false);
+    });
+</script>
+{% endblock %}
+
+
+{# Helper macro to normalize media path -> usable URL #}
+{% macro media_url(media) -%}
+  {%- set p = '' -%}
+  {%- if media is mapping -%}
+    {%- set p = (media.get('path') or media.get('filename') or '') -%}
+  {%- else -%}
+    {%- set p = media or '' -%}
+  {%- endif -%}
+
+  {%- if not p -%}
+    {{ '' }}
+  {%- elif p.startswith('http://') or p.startswith('https://') -%}
+    {{ p }}
+  {%- elif p.startswith('static/') -%}
+    {{ url_for('static', filename=p[7:]) }}
+  {%- elif p.startswith('/') -%}
+    {{ url_for('static', filename=p.lstrip('/')) }}
+  {%- else -%}
+    {{ url_for('static', filename=p) }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 mb-4" data-aos="fade-down">
+            <a href="javascript:history.back()" class="btn btn-link btn-back text-decoration-none p-0">
+                <i class="bi bi-arrow-left-circle-fill me-2 fs-4"></i>
+                <span class="d-none d-sm-inline">Return to Decorations</span>
+            </a>
+        </div>
+        <div class="col-lg-11">
+            <div class="cyber-card p-lg-5 p-4" data-aos="fade-up">
+                <div class="row g-5">
+                    
+                    <div class="col-lg-5">
+                        <div class="sticky-summary">
+                            <h2 class="outfit-font mb-4"><i class="bi bi-gift-fill me-2"></i> Your Selection</h2>
+
+                            {# Media Handling: Get image and set fallback #}
+                            {% set first_img = decoration.get_first_image() %}
+                            {% set img_src = media_url(first_img) if first_img else 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800&h=800&fit=crop' %}
+                            
+                            <a data-fancybox="gallery" href="{{ img_src }}" data-caption="{{ decoration.title }}" data-aos="fade-up" data-aos-delay="100">
+                                <img src="{{ img_src }}" class="decoration-media-box" alt="{{ decoration.title }}" loading="lazy">
+                            </a>
+
+                            <div class="mt-4" data-aos="fade-up" data-aos-delay="200">
+                                <h3 class="outfit-font mb-2">{{ decoration.title }}</h3>
+                                <p class="text-muted small mb-3">{{ decoration.description[:180] }}{% if decoration.description|length > 180 %}...{% endif %}</p>
+
+                                <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+                                    <div class="d-flex flex-column">
+                                        {% if decoration.discount_percent and decoration.discount_percent > 0 %}
+                                            <span class="h4 mb-0 outfit-font" style="color:#f43f5e;">₹{{ '%.2f'|format(decoration.get_current_price()) }}</span>
+                                            <small class="small-muted text-decoration-line-through">₹{{ '%.2f'|format(decoration.price) }}</small>
+                                        {% else %}
+                                            <span class="h4 mb-0 outfit-font" style="color:#6366f1;">₹{{ '%.2f'|format(decoration.price) }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="badge bg-primary-subtle text-primary outfit-font fs-6 px-3 py-2" style="background-color: rgba(99, 102, 241, 0.15) !important; color: #6366f1 !important;">{{ decoration.cafe.area }}</span>
+                                </div>
+
+                                <h5 class="outfit-font mb-2 text-white">What's Included</h5>
+                                <ul class="list-unstyled small ps-2">
+                                    {% for item in decoration.get_includes() %}
+                                        <li class="inclusion-item mb-1" data-aos="fade-up" data-aos-delay="{{ loop.index * 50 }}">
+                                            <i class="bi bi-stars me-2 text-warning"></i>{{ item }}
+                                        </li>
+                                    {% else %}
+                                        <li class="text-muted small">No items listed</li>
+                                    {% endfor %}
+                                </ul>
+
+                                <div class="mt-4 pt-3 border-top border-secondary small-muted">
+                                    <h6 class="outfit-font text-white mb-2">Location</h6>
+                                    <p class="mb-1"><i class="bi bi-shop me-2 text-info"></i>{{ decoration.cafe.name }}</p>
+                                    <p class="mb-0"><i class="bi bi-geo me-2 text-info"></i>{{ decoration.cafe.address|replace('\n',' ') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-7 border-start border-secondary-subtle ps-lg-5">
+                        <h2 class="outfit-font mb-4 text-center text-lg-start"><i class="bi bi-calendar-plus me-2"></i> Secure Your Date</h2>
+
+                        <form method="POST" id="bookingForm" novalidate>
+                            {{ form.hidden_tag() }}
+                            <div class="row g-4">
+                                <div class="col-12" data-aos="fade-up" data-aos-delay="300">
+                                    <h5 class="outfit-font text-muted border-bottom border-secondary pb-2 mb-3">Contact Details</h5>
+                                </div>
+                                <div class="col-md-6" data-aos="fade-up" data-aos-delay="400">
+                                    {{ form.name.label(class="form-label fw-semibold") }}
+                                    {{ form.name(id='name', class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Your full name") }}
+                                    {% for error in form.name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                                </div>
+
+                                <div class="col-md-6" data-aos="fade-up" data-aos-delay="500">
+                                    {{ form.email.label(class="form-label fw-semibold") }}
+                                    {{ form.email(id='email', class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="name@example.com") }}
+                                    {% for error in form.email.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                                </div>
+
+                                <div class="col-md-6" data-aos="fade-up" data-aos-delay="600">
+                                    {{ form.phone.label(class="form-label fw-semibold") }}
+                                    {{ form.phone(id='phone', class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="+91 XXXX XXXX") }}
+                                    {% for error in form.phone.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                                </div>
+
+                                <div class="col-12 mt-5" data-aos="fade-up" data-aos-delay="700">
+                                    <h5 class="outfit-font text-muted border-bottom border-secondary pb-2 mb-3">Event Parameters</h5>
+                                </div>
+
+                                <div class="col-md-6" data-aos="fade-up" data-aos-delay="800">
+                                    {{ form.guests.label(class="form-label fw-semibold") }}
+                                    {{ form.guests(id='guests', class="form-control" + (" is-invalid" if form.guests.errors else ""), placeholder="Number of guests") }}
+                                    {% for error in form.guests.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                                </div>
+
+                                <div class="col-md-6" data-aos="fade-up" data-aos-delay="900">
+                                    {{ form.date.label(class="form-label fw-semibold") }}
+                                    {{ form.date(id='date', class="form-control" + (" is-invalid" if form.date.errors else ""), type="date") }}
+                                    {% for error in form.date.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                                </div>
+
+                                <div class="col-md-6" data-aos="fade-up" data-aos-delay="1000">
+                                    {{ form.time.label(class="form-label fw-semibold") }}
+                                    {{ form.time(id='time', class="form-select" + (" is-invalid" if form.time.errors else "")) }}
+                                    {% for error in form.time.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                                </div>
+
+                                <div class="col-12" data-aos="fade-up" data-aos-delay="1100">
+                                    {{ form.notes.label(class="form-label fw-semibold") }}
+                                    {{ form.notes(id='notes', class="form-control", rows="4", placeholder="Any special requests (e.g., cake flavor, allergy info, preferred table location)...") }}
+                                </div>
+
+                                <div class="col-12 pt-3" data-aos="fade-up" data-aos-delay="1200">
+                                    <div class="d-grid">
+                                        <button id="btn-request" type="submit" class="btn btn-primary">Request</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/availability.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const btn = document.getElementById('btn-request');
+  const decorationIdEl = document.querySelector('input[name="decoration_id"], select[name="decoration_id"]');
+  const dateEl = document.querySelector('input[name="date"]');
+  const timeEl = document.querySelector('input[name="time"]');
+
+  async function checkAndToggle() {
+    if (!decorationIdEl || !dateEl || !timeEl) return;
+    const decoration_id = decorationIdEl.value;
+    const date = dateEl.value;
+    const time = timeEl.value;
+    if (!decoration_id || !date || !time) { btn.disabled = false; return; }
+    try {
+      const resp = await fetch(`/api/check_availability?decoration_id=${encodeURIComponent(decoration_id)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`);
+      const data = await resp.json();
+      if (data.available) {
+        btn.disabled = false;
+        // optionally hide warning
+        document.getElementById('availability-warning')?.remove();
+      } else {
+        btn.disabled = true;
+        // show reason
+        let el = document.getElementById('availability-warning');
+        if (!el) {
+          el = document.createElement('div'); el.id = 'availability-warning';
+          el.className = 'alert alert-warning mt-2';
+          btn.parentNode.insertBefore(el, btn.nextSibling);
+        }
+        el.innerText = data.message || 'Not available for selected slot.';
+      }
+    } catch (e) {
+      console.error('Availability check failed', e);
+    }
+  }
+
+  [dateEl, timeEl].forEach(i => i && i.addEventListener('change', checkAndToggle));
+  decorationIdEl && decorationIdEl.addEventListener('change', checkAndToggle);
+
+  // initial check on load (if values present)
+  setTimeout(checkAndToggle, 300);
+});
+</script>
+
+{% endblock %}

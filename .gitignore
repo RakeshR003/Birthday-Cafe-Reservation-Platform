@@ -1,0 +1,25 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual envs
+venv/
+env/
+ENV/
+
+# Dev / Editor
+.vscode/
+.idea/
+.DS_Store
+*.log
+
+# Secrets & local config
+.env
+.env.*
+!.env.example
+instance/
+*.db
+
+# Uploaded media (optional — remove if you DO want these in repo)
+static/uploads/

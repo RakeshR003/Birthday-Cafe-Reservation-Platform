@@ -1,0 +1,186 @@
+{% extends "admin/admin_layout.html" %}
+
+{% block title %}Manage Cafes - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold">
+            <i class="bi bi-shop me-2"></i>Manage Cafes
+        </h1>
+        <button class="btn btn-primary btn-sm" onclick="showAddCafeModal()">
+            <i class="bi bi-plus-circle me-1"></i>Add Cafe
+        </button>
+    </div>
+
+    <!-- Cafes Grid -->
+    <div class="row">
+        {% for cafe in cafes %}
+        <div class="col-xl-4 col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title">{{ cafe.name }}</h5>
+                        <span class="badge bg-{{ cafe.get_status_badge() }}">{{ cafe.status|title }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-geo-alt me-1"></i>{{ cafe.area }}
+                        </p>
+                        <p class="small text-muted">{{ cafe.address|truncate(100) }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        {% if cafe.phone %}
+                        <p class="small mb-1">
+                            <i class="bi bi-telephone me-1"></i>{{ cafe.phone }}
+                        </p>
+                        {% endif %}
+                        {% if cafe.email %}
+                        <p class="small mb-1">
+                            <i class="bi bi-envelope me-1"></i>{{ cafe.email }}
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            {{ cafe.decorations|length }} decorations
+                        </small>
+                        <div class="btn-group btn-group-sm">
+                            {% if cafe.status == 'pending' %}
+                            <button class="btn btn-success" onclick="approveCafe({{ cafe.id }})">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                            <button class="btn btn-danger" onclick="rejectCafe({{ cafe.id }})">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            {% endif %}
+                            <button class="btn btn-outline-primary" onclick="editCafe({{ cafe.id }})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-outline-info" onclick="viewCafeDetails({{ cafe.id }})">
+                                <i class="bi bi-info-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-shop text-muted" style="font-size: 3rem;"></i>
+            <h5 class="text-muted mt-3">No Cafes Found</h5>
+            <p class="text-muted">There are no cafes in the system yet.</p>
+            <button class="btn btn-primary" onclick="showAddCafeModal()">
+                <i class="bi bi-plus-circle me-1"></i>Add First Cafe
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Cafe Details Modal -->
+<div class="modal fade" id="cafeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Cafe Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="cafeDetails">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function approveCafe(id) {
+    if (confirm('Are you sure you want to approve this cafe?')) {
+        fetch(`/api/admin/cafes/${id}/approve`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+
+function rejectCafe(id) {
+    if (confirm('Are you sure you want to reject this cafe?')) {
+        fetch(`/api/admin/cafes/${id}/reject`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function viewCafeDetails(id) {
+    const modalBody = document.getElementById('cafeDetails');
+    modalBody.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>';
+    const modal = new bootstrap.Modal(document.getElementById('cafeModal'));
+    modal.show();
+
+    fetch(`/api/admin/cafes/${id}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                modalBody.innerHTML = '<div class="alert alert-danger">Could not load cafe details.</div>';
+                return;
+            }
+            const c = data.cafe;
+            const decoRows = c.decorations.length
+                ? c.decorations.map(d => `<li>${escapeHtml(d.title)} — <span class="badge bg-${d.status === 'approved' ? 'success' : (d.status === 'pending' ? 'warning' : 'danger')}">${escapeHtml(d.status)}</span></li>`).join('')
+                : '<li class="text-muted">No decorations yet</li>';
+            modalBody.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Cafe Info</h6>
+                        <p><strong>${escapeHtml(c.name)}</strong><br>${escapeHtml(c.area)}</p>
+                        <p>${escapeHtml(c.address)}</p>
+                        <p>${escapeHtml(c.phone || '—')}<br>${escapeHtml(c.email || '—')}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Status</h6>
+                        <p><span class="badge bg-${c.status === 'approved' ? 'success' : (c.status === 'pending' ? 'warning' : 'danger')}">${escapeHtml(c.status)}</span></p>
+                        <p>Submitted by: <strong>${escapeHtml(c.created_by)}</strong></p>
+                    </div>
+                </div>
+                <hr>
+                <h6>Decorations at this cafe (${c.decoration_count})</h6>
+                <ul>${decoRows}</ul>
+            `;
+        })
+        .catch(() => {
+            modalBody.innerHTML = '<div class="alert alert-danger">Something went wrong loading cafe details.</div>';
+        });
+}
+
+function showAddCafeModal() {
+    alert('Add cafe modal would open here');
+}
+
+function editCafe(id) {
+    alert(`Edit cafe ${id} - functionality to be implemented`);
+}
+</script>
+{% endblock %}

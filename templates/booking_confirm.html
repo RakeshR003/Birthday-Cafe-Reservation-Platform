@@ -1,0 +1,216 @@
+{% extends "layout.html" %}
+
+{% block title %}
+  {%- if booking and booking.status == 'approved' -%}
+    Booking Confirmed - Birthday Cafe
+  {%- elif booking and booking.status == 'pending' -%}
+    Booking Request Submitted - Birthday Cafe
+  {%- elif booking and booking.status == 'rejected' -%}
+    Booking Rejected - Birthday Cafe
+  {%- else -%}
+    Booking - Birthday Cafe
+  {%- endif -%}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 py-md-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="glass-panel p-4 p-md-5 text-center" data-aos="fade-up" data-aos-delay="50">
+
+                <div class="text-center mb-4">
+                    <!-- Icon changes based on status -->
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-4 p-2"
+                         style="width: 100px; height: 100px; background: var(--brand-grad);"
+                         data-aos="zoom-in" data-aos-delay="150">
+                        <div class="rounded-circle bg-dark d-flex align-items-center justify-content-center" style="width: 90px; height: 90px;">
+                            {% if booking and booking.status == 'approved' %}
+                                <i class="bi bi-check-lg text-white" style="font-size: 3rem;"></i>
+                            {% elif booking and booking.status == 'pending' %}
+                                <i class="bi bi-clock-history text-white" style="font-size: 2.8rem;"></i>
+                            {% elif booking and booking.status == 'rejected' %}
+                                <i class="bi bi-x-lg text-white" style="font-size: 2.8rem;"></i>
+                            {% else %}
+                                <i class="bi bi-info-lg text-white" style="font-size: 2.8rem;"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <h1 class="fw-bold text-gradient mb-2" data-aos="fade-up" data-aos-delay="250">
+                        {% if booking and booking.status == 'approved' %}
+                            Booking Confirmed!
+                        {% elif booking and booking.status == 'pending' %}
+                            Booking Request Submitted!
+                        {% elif booking and booking.status == 'rejected' %}
+                            Booking Rejected
+                        {% else %}
+                            Booking Status
+                        {% endif %}
+                    </h1>
+
+                    <p class="text-muted mb-0" data-aos="fade-up" data-aos-delay="300">
+                        {% if booking and booking.status == 'approved' %}
+                            Thank you, <strong>{{ booking.customer_name }}</strong>. Your celebration is officially on the calendar. 🎉
+                        {% elif booking and booking.status == 'pending' %}
+                            Thanks, <strong>{{ booking.customer_name }}</strong>. We've received your request — our team will check availability and confirm shortly.
+                        {% elif booking and booking.status == 'rejected' %}
+                            Hello <strong>{{ booking.customer_name }}</strong>. Unfortunately this booking could not be confirmed. Please contact us to reschedule.
+                        {% else %}
+                            Thank you. We will update you about your booking status soon.
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div class="p-3 rounded-4 mb-4 border border-primary border-opacity-50" 
+                     style="background: rgba(99, 102, 241, 0.08);" data-aos="fade-up" data-aos-delay="400">
+                    <div class="d-flex align-items-start gap-2 text-muted">
+                        {% if booking and booking.status == 'approved' %}
+                        <i class="bi bi-info-circle mt-1 text-primary"></i>
+                        {% elif booking and booking.status == 'pending' %}
+                        <i class="bi bi-clock mt-1 text-warning"></i>
+                        {% else %}
+                        <i class="bi bi-exclamation-circle mt-1 text-secondary"></i>
+                        {% endif %}
+                        <div class="small text-start">
+                            <div class="fw-semibold mb-1 text-white">What happens next?</div>
+                            <ul class="mb-0 ps-3">
+                                {% if booking and booking.status == 'approved' %}
+                                    <li>An executive or the cafe will contact you shortly to confirm fine details.</li>
+                                    <li>Please reach the cafe at least <strong>15 minutes early</strong> on the event day.</li>
+                                    <li>Keep your phone reachable on the booking date for smooth coordination.</li>
+                                {% elif booking and booking.status == 'pending' %}
+                                    <li>Our staff will verify availability and confirm the booking soon.</li>
+                                    <li>If a conflict is found, we will contact you with alternatives.</li>
+                                    <li>Keep your contact details reachable for quicker confirmation.</li>
+                                {% elif booking and booking.status == 'rejected' %}
+                                    <li>We couldn't confirm this booking—please reach out to us so we can assist.</li>
+                                {% else %}
+                                    <li>We will contact you with more information shortly.</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-card rounded-4 p-4 mb-4 mt-4 border border-secondary border-opacity-25 text-start" 
+                     data-aos="fade-up" data-aos-delay="500">
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <p class="text-uppercase small text-muted mb-1">Booking ID</p>
+                            <h5 class="fw-bold mb-0 text-gradient">#{{ booking.id }}</h5>
+                        </div>
+
+                        {# Badge color reflects status #}
+                        {% if booking and booking.status == 'approved' %}
+                            <span class="badge rounded-pill text-success border border-success border-opacity-50 px-3 py-2 small" 
+                                  style="background: rgba(16, 185, 129, 0.08);">
+                                <i class="bi bi-check-circle-fill me-1"></i> {{ booking.status|capitalize }}
+                            </span>
+                        {% elif booking and booking.status == 'pending' %}
+                            <span class="badge rounded-pill text-warning border border-warning border-opacity-50 px-3 py-2 small" 
+                                  style="background: rgba(250, 204, 21, 0.08);">
+                                <i class="bi bi-clock me-1"></i> {{ booking.status|capitalize }}
+                            </span>
+                        {% elif booking and booking.status == 'rejected' %}
+                            <span class="badge rounded-pill text-danger border border-danger border-opacity-50 px-3 py-2 small" 
+                                  style="background: rgba(239, 68, 68, 0.06);">
+                                <i class="bi bi-x-circle me-1"></i> {{ booking.status|capitalize }}
+                            </span>
+                        {% else %}
+                            <span class="badge rounded-pill text-muted px-3 py-2 small">{{ booking.status|default('Unknown')|capitalize }}</span>
+                        {% endif %}
+                    </div>
+
+                    <hr class="my-3 border-secondary opacity-25">
+
+                    <div class="row gy-3 small">
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Decoration</span>
+                            <span class="fw-semibold text-white">{{ booking.decoration.title }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Date & Time</span>
+                            <span class="fw-semibold text-white">
+                                {%- if booking.date is string -%}
+                                  {{ booking.date }}
+                                {%- else -%}
+                                  {{ booking.date.strftime('%B %d, %Y') }}
+                                {%- endif -%}
+                                · {{ booking.time }}
+                            </span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Cafe</span>
+                            <span class="fw-semibold text-white">
+                                {{ booking.decoration.cafe.name }}
+                                {% if booking.decoration.cafe.area %}
+                                    · <span class="text-muted">{{ booking.decoration.cafe.area }}</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Guests</span>
+                            <span class="fw-semibold text-white">{{ booking.guests }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Booked by</span>
+                            <span class="fw-semibold text-white">{{ booking.customer_name }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Contact Email</span>
+                            <span class="fw-semibold text-white">{{ booking.customer_email }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Contact Phone</span>
+                            <span class="fw-semibold text-white">{{ booking.customer_phone }}</span>
+                        </div>
+                        {% if booking.total_amount %}
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Approx. Setup Cost</span>
+                            <span class="fw-bold text-gradient fs-5">₹{{ '%.0f'|format(booking.total_amount) }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="d-grid gap-3 d-md-flex justify-content-center mt-4" data-aos="fade-up" data-aos-delay="600">
+                    
+                    {# Only show 'Send Confirmation on WhatsApp' when booking is approved and whatsapp_link available #}
+                    {% if booking and booking.status == 'approved' and whatsapp_link %}
+                    <a href="{{ whatsapp_link }}" target="_blank"
+                       class="btn btn-glow d-inline-flex align-items-center justify-content-center px-4 py-2 w-100 w-md-auto">
+                        <i class="bi bi-whatsapp me-2"></i>
+                        Send Confirmation on WhatsApp
+                    </a>
+                    {% elif booking and booking.status == 'pending' %}
+                    <button class="btn btn-glow d-inline-flex align-items-center justify-content-center px-4 py-2 w-100 w-md-auto" disabled>
+                        <i class="bi bi-whatsapp me-2"></i>
+                        WhatsApp (available after confirmation)
+                    </button>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('decoration_detail', id=booking.decoration.id) }}"
+                       class="btn btn-outline-primary px-4 py-2 w-100 w-md-auto">
+                        <i class="bi bi-eye me-1"></i>
+                        View Decoration
+                    </a>
+                    <a href="{{ url_for('home') }}" class="btn btn-outline-secondary px-4 py-2 w-100 w-md-auto">
+                        <i class="bi bi-house me-1"></i>
+                        Back to Home
+                    </a>
+                </div>
+
+                <p class="text-center text-muted small mb-0 mt-3" data-aos="fade-up" data-aos-delay="700">
+                    {% if booking and booking.status == 'pending' %}
+                        We will notify you once your booking is approved. If any details are incorrect, please contact us.
+                    {% else %}
+                        If you entered any detail incorrectly, please use the WhatsApp link to notify us immediately.
+                    {% endif %}
+                </p>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

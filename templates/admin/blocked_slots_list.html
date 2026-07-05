@@ -1,0 +1,27 @@
+{% extends "admin/admin_layout.html" %}
+{% block content %}
+<div class="container py-4">
+  <h3>Blocked Slots</h3>
+  <a class="btn btn-primary mb-3" href="{{ url_for('admin_blocked_slots_new') }}">New Blocked Slot</a>
+  <table class="table table-sm">
+    <thead><tr><th>ID</th><th>Cafe</th><th>Decoration</th><th>Date</th><th>Time</th><th>Reason</th><th>Action</th></tr></thead>
+    <tbody>
+    {% for s in slots %}
+      <tr>
+        <td>{{ s.id }}</td>
+        <td>{{ s.cafe_id }}</td>
+        <td>{{ s.decoration_id }}</td>
+        <td>{{ s.date }}</td>
+        <td>{{ s.time }}</td>
+        <td>{{ s.reason }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin_blocked_slots_delete', slot_id=s.id) }}" onsubmit="return confirm('Remove block?');">
+            <button class="btn btn-sm btn-danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

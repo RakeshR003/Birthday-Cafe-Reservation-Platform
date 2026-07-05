@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block title %}Decorator Portal - Birthday Cafe{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-primary mb-3">
+                    <i class="bi bi-palette2 me-3"></i>Decorator Portal
+                </h1>
+                <p class="lead text-muted">
+                    Join our network of talented decorators and showcase your creative birthday decorations 
+                    at premium cafes across the city.
+                </p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Benefits Card -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="icon-wrapper bg-primary text-white rounded-circle mx-auto mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-graph-up-arrow fs-2"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Grow Your Business</h4>
+                            <p class="text-muted">
+                                Reach thousands of customers looking for birthday decorations. 
+                                Expand your client base and increase your revenue.
+                            </p>
+                            <ul class="list-unstyled text-start mt-3">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Zero marketing costs</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Premium cafe partnerships</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Secure online payments</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features Card -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="icon-wrapper bg-success text-white rounded-circle mx-auto mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-tools fs-2"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Powerful Tools</h4>
+                            <p class="text-muted">
+                                Manage your decorations, track bookings, and grow your portfolio 
+                                with our dedicated decorator dashboard.
+                            </p>
+                            <ul class="list-unstyled text-start mt-3">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Easy portfolio management</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Real-time booking alerts</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Performance analytics</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How It Works -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h3 class="text-center fw-bold mb-4">How It Works</h3>
+                    <div class="row g-4">
+                        <div class="col-md-4 text-center">
+                            <div class="step-number bg-primary text-white rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold;">1</div>
+                            <h5>Register & Get Approved</h5>
+                            <p class="text-muted">Sign up as a decorator and get your account verified by our team.</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="step-number bg-primary text-white rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold;">2</div>
+                            <h5>Add Your Decorations</h5>
+                            <p class="text-muted">Upload your decoration themes with photos, prices, and descriptions.</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="step-number bg-primary text-white rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold;">3</div>
+                            <h5>Start Receiving Bookings</h5>
+                            <p class="text-muted">Get notified when customers book your decorations and manage everything online.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Buttons -->
+            <div class="text-center mt-5">
+                <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+                    <a href="{{ url_for('decorator_register') }}" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-person-plus me-2"></i>Join as Decorator
+                    </a>
+                    <a href="{{ url_for('decorator_login') }}" class="btn btn-outline-primary btn-lg px-5">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Decorator Login
+                    </a>
+                </div>
+                
+                <div class="mt-4">
+                    <p class="text-muted">
+                        Already working with us? 
+                        <a href="{{ url_for('decorator_login') }}" class="text-primary text-decoration-none">Login to your account</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

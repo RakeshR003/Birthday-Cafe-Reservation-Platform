@@ -1,0 +1,68 @@
+/* Admin panel — small overrides layered on top of main.css.
+   The shared theme (static/css/main.css) already provides the dark
+   background, cards, buttons and forms; this file only holds things
+   unique to the admin screens. */
+
+.navbar.bg-dark {
+    background: var(--ink-soft) !important;
+    border-bottom: 1px solid var(--ink-line);
+}
+
+/* Dashboard stat tiles */
+.stat-tile {
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    background: var(--ink-soft);
+    border: 1px solid var(--ink-line);
+    transition: transform 0.25s ease;
+}
+.stat-tile:hover { transform: translateY(-4px); }
+.stat-tile .stat-value {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+}
+.stat-tile .stat-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--brand-grad);
+    color: var(--cream);
+    font-size: 1.25rem;
+}
+
+/* Tables */
+.table {
+    color: var(--cream);
+    --bs-table-bg: transparent;
+    --bs-table-striped-bg: rgba(255, 255, 255, 0.03);
+    --bs-table-hover-bg: rgba(226, 62, 107, 0.08);
+    border-color: var(--ink-line);
+}
+.table thead th {
+    border-bottom: 1px solid var(--ink-line);
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+}
+
+/* FullCalendar dark theming so it doesn't look out of place */
+.fc {
+    --fc-border-color: var(--ink-line);
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: var(--ink-soft);
+    --fc-list-event-hover-bg-color: rgba(226, 62, 107, 0.1);
+    color: var(--cream);
+}
+.fc .fc-button {
+    background: var(--brand-grad);
+    border: none;
+}
+.fc .fc-toolbar-title { font-family: var(--font-display); }
+
+/* Status pills used across admin tables */
+.status-pill { border-radius: 999px; padding: 0.3em 0.8em; font-size: 0.75rem; font-weight: 600; }
+.status-pill.approved { background: rgba(63, 191, 127, 0.15); color: var(--success); }
+.status-pill.pending { background: rgba(243, 169, 59, 0.15); color: var(--marigold); }
+.status-pill.rejected { background: rgba(226, 85, 85, 0.15); color: var(--danger); }

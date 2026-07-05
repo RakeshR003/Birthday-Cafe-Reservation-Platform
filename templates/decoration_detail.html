@@ -1,0 +1,323 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ decoration.title }} - Birthday Cafe{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css"/>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<style>
+    /* Page-specific styles only — shared tokens/blob/glass-panel/buttons live in main.css */
+
+    /* --- Swiper Gallery --- */
+    .gallery-wrapper { position: relative; border-radius: 24px; overflow: hidden; border: 1px solid var(--ink-line); }
+
+    .main-swiper { height: 500px; width: 100%; background: #000; }
+    .main-swiper .swiper-slide img, .main-swiper .swiper-slide video {
+        width: 100%; height: 100%; object-fit: contain;
+        background: #000;
+    }
+
+    .thumb-swiper { height: 100px; margin-top: 10px; }
+    .thumb-swiper .swiper-slide {
+        width: 100px; height: 100%; border-radius: 12px; overflow: hidden;
+        opacity: 0.4; transition: opacity 0.3s, border 0.3s;
+        border: 2px solid transparent; cursor: pointer;
+    }
+    .thumb-swiper .swiper-slide-thumb-active { opacity: 1; border-color: var(--marigold); }
+    .thumb-swiper img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Media Badge */
+    .media-type-badge {
+        position: absolute; top: 15px; left: 15px; z-index: 10;
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+        color: white; padding: 5px 12px; border-radius: 50px; font-size: 0.8rem;
+    }
+
+    /* --- Details Sidebar --- */
+    .sticky-details { position: sticky; top: 90px; }
+
+    .feature-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .feature-item:last-child { border-bottom: none; }
+    .feature-icon {
+        width: 32px; height: 32px; border-radius: 8px;
+        background: rgba(255,255,255,0.05); color: var(--marigold);
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    /* --- Location Card --- */
+    .loc-card {
+        background: rgba(255,255,255,0.02); border-radius: 16px; padding: 1rem;
+        border: 1px solid var(--ink-line); transition: transform 0.2s;
+    }
+
+    /* --- Mobile Floating Action --- */
+    .mobile-fab {
+        display: none; position: fixed; bottom: 0; left: 0; width: 100%;
+        background: rgba(27, 16, 35, 0.92); backdrop-filter: blur(10px);
+        border-top: 1px solid var(--ink-line); padding: 15px; z-index: 1000;
+    }
+
+    @media (max-width: 991px) {
+        .main-swiper { height: 350px; }
+        .sticky-details { position: relative; top: 0; }
+        .mobile-fab { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+        .desktop-book-btn { display: none; }
+    }
+</style>
+{% endblock %}
+
+{# ---------- Helper macros (Preserved Logic) ---------- #}
+{% macro media_url(media) -%}
+  {%- set p = '' -%}
+  {%- if media is mapping -%}
+    {%- set p = (media.get('path') or media.get('filename') or '') -%}
+  {%- else -%}
+    {%- set p = media or '' -%}
+  {%- endif -%}
+  {%- if not p -%}{{ '' }}
+  {%- elif p.startswith('http') -%}{{ p }}
+  {%- elif p.startswith('static/') -%}{{ url_for('static', filename=p[7:]) }}
+  {%- elif p.startswith('/') -%}{{ url_for('static', filename=p.lstrip('/')) }}
+  {%- else -%}{{ url_for('static', filename=p) }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro media_type(media) -%}
+  {%- if media is mapping -%}
+    {%- set t = (media.get('type') or '')|lower -%}
+    {%- if t -%}{{ t }}
+    {%- else -%}
+      {%- set p = media.get('path') or media.get('filename') or '' -%}
+      {%- set ext = p.split('.')[-1].lower() if '.' in p else '' -%}
+      {%- if ext in ['mp4','mov','mkv','avi','webm','ogg'] -%}video{% else %}image{% endif -%}
+    {%- endif -%}
+  {%- else -%}
+    {%- set p = media or '' -%}
+    {%- set ext = p.split('.')[-1].lower() if '.' in p else '' -%}
+    {%- if ext in ['mp4','mov','mkv','avi','webm','ogg'] -%}video{% else %}image{% endif -%}
+  {%- endif -%}
+{%- endmacro %}
+
+{% block content %}
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="container py-5">
+    
+    <div class="mb-4" data-aos="fade-down">
+        <a href="{{ url_for('home') }}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+            <i class="bi bi-arrow-left me-2"></i>Back to Collections
+        </a>
+    </div>
+
+    <div class="row g-5">
+        <div class="col-lg-7" data-aos="fade-right">
+            {% set all_media = decoration.get_media_files() or [] %}
+            
+            {% if all_media|length > 0 %}
+                <div class="gallery-wrapper shadow-lg">
+                    <div class="swiper main-swiper">
+                        <div class="swiper-wrapper">
+                            {% for media in all_media %}
+                                {% set mtype = media_type(media) %}
+                                {% set murl = media_url(media) %}
+                                
+                                <div class="swiper-slide position-relative">
+                                    <span class="media-type-badge">
+                                        <i class="bi bi-{{ 'camera-video' if mtype == 'video' else 'image' }} me-1"></i>
+                                        {{ loop.index }} / {{ all_media|length }}
+                                    </span>
+
+                                    <a href="{{ murl }}" data-fancybox="gallery" data-type="{{ 'html5video' if mtype == 'video' else 'image' }}" data-caption="{{ decoration.title }} - {{ 'Video' if mtype == 'video' else 'Photo' }}">
+                                        {% if mtype == 'video' %}
+                                            <video muted loop playsinline preload="metadata">
+                                                <source src="{{ murl }}">
+                                            </video>
+                                            <div class="position-absolute top-50 start-50 translate-middle pointer-events-none">
+                                                <i class="bi bi-play-circle-fill text-white opacity-75" style="font-size: 4rem;"></i>
+                                            </div>
+                                        {% else %}
+                                            <img src="{{ murl }}" alt="View Image" loading="lazy">
+                                        {% endif %}
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
+                    </div>
+                </div>
+
+                <div class="swiper thumb-swiper">
+                    <div class="swiper-wrapper">
+                        {% for media in all_media %}
+                            {% set murl = media_url(media) %}
+                            {% set mtype = media_type(media) %}
+                            <div class="swiper-slide">
+                                {% if mtype == 'video' %}
+                                    <video src="{{ murl }}#t=1" class="w-100 h-100 object-fit-cover" preload="metadata"></video>
+                                    <div class="position-absolute inset-0 d-flex align-items-center justify-content-center bg-black bg-opacity-25">
+                                        <i class="bi bi-play-fill text-white"></i>
+                                    </div>
+                                {% else %}
+                                    <img src="{{ murl }}" loading="lazy">
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            {% else %}
+                <div class="gallery-wrapper d-flex align-items-center justify-content-center bg-card" style="height: 400px;">
+                    <div class="text-center text-muted">
+                        <i class="bi bi-image fs-1 opacity-50"></i>
+                        <p class="mt-2">No visuals available yet.</p>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="glass-panel p-4 mt-4">
+                <h4 class="fw-bold mb-3 font-outfit">About this Setup</h4>
+                <p class="text-muted leading-relaxed mb-4">
+                    {{ decoration.description }}
+                </p>
+
+                <h5 class="fw-bold mb-3 font-outfit text-white">What's Included</h5>
+                <div class="row g-2">
+                    {% for item in decoration.get_includes() %}
+                        <div class="col-md-6">
+                            <div class="feature-item">
+                                <div class="feature-icon"><i class="bi bi-check-lg"></i></div>
+                                <span class="small text-light">{{ item }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="sticky-details" data-aos="fade-left" data-aos-delay="100">
+                <div class="glass-panel p-4">
+                    <div class="mb-4 border-bottom border-secondary pb-4">
+                        <h5 class="text-accent mb-1 text-uppercase small fw-bold ls-1">Birthday Package</h5>
+                        <h1 class="display-5 fw-bold mb-2">{{ decoration.title }}</h1>
+                        
+                        <div class="d-flex align-items-end gap-2">
+                            {% if decoration.discount_percent > 0 %}
+                                <h2 class="text-gradient fw-bold mb-0">₹{{ '%.0f'|format(decoration.get_current_price()) }}</h2>
+                                <span class="text-decoration-line-through text-muted fs-5">₹{{ '%.0f'|format(decoration.price) }}</span>
+                                <span class="badge bg-danger rounded-pill">{{ decoration.discount_percent }}% OFF</span>
+                            {% else %}
+                                <h2 class="text-gradient fw-bold mb-0">₹{{ '%.0f'|format(decoration.price) }}</h2>
+                            {% endif %}
+                        </div>
+                        {% if decoration.discount_percent > 0 %}
+                        <div class="small text-success mt-1">
+                            <i class="bi bi-stars"></i> You save ₹{{ '%.0f'|format(decoration.price - decoration.get_current_price()) }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="text-muted small text-uppercase fw-bold mb-2">Venue</label>
+                        <div class="loc-card" data-tilt>
+                            <div class="d-flex gap-3">
+                                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-3 d-flex align-items-center">
+                                    <i class="bi bi-geo-alt-fill fs-4"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold text-white mb-0">{{ decoration.cafe.name }}</h6>
+                                    <p class="small text-muted mb-0">{{ decoration.cafe.area }}</p>
+                                    <p class="small text-white-50 mb-0 mt-1" style="font-size: 0.75rem;">{{ decoration.cafe.address }}</p>
+                                </div>
+                            </div>
+                            {% if decoration.cafe.phone %}
+                                <div class="mt-2 pt-2 border-top border-secondary">
+                                    <small class="text-muted"><i class="bi bi-telephone me-1"></i> {{ decoration.cafe.phone }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="desktop-book-btn">
+                        <a href="{{ url_for('book_decoration', decoration_id=decoration.id) }}" class="btn btn-glow w-100 btn-lg rounded-pill py-3">
+                            <i class="bi bi-calendar-check-fill me-2"></i> Book This Setup
+                        </a>
+                        <div class="text-center mt-3">
+                            <small class="text-muted"><i class="bi bi-shield-check me-1"></i> Secure Booking • Instant Confirmation</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mobile-fab">
+    <div>
+        <small class="text-muted d-block">Total Price</small>
+        <span class="text-white fw-bold fs-4">₹{{ '%.0f'|format(decoration.get_current_price()) }}</span>
+    </div>
+    <a href="{{ url_for('book_decoration', decoration_id=decoration.id) }}" class="btn btn-glow rounded-pill px-4">
+        Book Now
+    </a>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+
+<script>
+    // --- 1. Init Animations ---
+    AOS.init({ once: true, duration: 800 });
+    
+    // --- 2. Swiper Logic ---
+    const thumbSwiper = new Swiper('.thumb-swiper', {
+        spaceBetween: 10,
+        slidesPerView: 4,
+        freeMode: true,
+        watchSlidesProgress: true,
+        breakpoints: {
+            320: { slidesPerView: 3 },
+            768: { slidesPerView: 4 }
+        }
+    });
+
+    const mainSwiper = new Swiper('.main-swiper', {
+        spaceBetween: 10,
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        thumbs: { swiper: thumbSwiper },
+        autoplay: { delay: 5000, disableOnInteraction: true },
+        effect: 'fade',
+        fadeEffect: { crossFade: true }
+    });
+
+    // --- 3. Fancybox (Lightbox) ---
+    Fancybox.bind('[data-fancybox="gallery"]', {
+        Toolbar: { display: ["zoom", "slideshow", "close"] },
+        Thumbs: { autoStart: true }
+    });
+
+    // --- 4. Video Handling (Pause on slide change) ---
+    mainSwiper.on('slideChange', function () {
+        document.querySelectorAll('video').forEach(vid => vid.pause());
+    });
+
+    // --- 5. Tilt Effect ---
+    VanillaTilt.init(document.querySelector(".loc-card"), {
+        max: 5, speed: 400, glare: true, "max-glare": 0.1
+    });
+
+</script>
+{% endblock %}

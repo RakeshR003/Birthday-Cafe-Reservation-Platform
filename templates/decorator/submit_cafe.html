@@ -1,0 +1,82 @@
+{% extends "decorator/decorator_layout.html" %}
+
+{% block title %}Add New Cafe - Birthday Cafe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-success text-white py-3">
+                    <h4 class="mb-0 fw-bold">
+                        <i class="bi bi-shop me-2"></i>Add New Cafe
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted mb-4">
+                        Add a new cafe location where your decorations will be available. 
+                        The cafe will need admin approval before it becomes active.
+                    </p>
+
+                    <form method="POST" id="cafeForm">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ form.name.label(class="form-label fw-semibold") }}
+                                {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Cafe Name") }}
+                                {% for error in form.name.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form.area.label(class="form-label fw-semibold") }}
+                                {{ form.area(class="form-control" + (" is-invalid" if form.area.errors else ""), placeholder="Area/Locality") }}
+                                {% for error in form.area.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-12">
+                                {{ form.address.label(class="form-label fw-semibold") }}
+                                {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else ""), rows="3", placeholder="Full address with landmark") }}
+                                {% for error in form.address.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form.phone.label(class="form-label fw-semibold") }}
+                                {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="Cafe phone number") }}
+                                {% for error in form.phone.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form.email.label(class="form-label fw-semibold") }}
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="cafe@email.com") }}
+                                {% for error in form.email.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ url_for('decorator_dashboard') }}" class="btn btn-outline-secondary me-md-2">
+                                        <i class="bi bi-arrow-left me-1"></i>Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-check-lg me-1"></i>Submit for Approval
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

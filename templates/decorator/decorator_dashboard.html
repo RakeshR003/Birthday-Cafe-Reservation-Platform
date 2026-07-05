@@ -1,0 +1,168 @@
+{% extends "decorator/decorator_layout.html" %}
+
+{% block title %}Decorator Dashboard - Birthday Cafe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold text-success">
+            <i class="bi bi-speedometer2 me-2"></i>Decorator Dashboard
+        </h1>
+        <div>
+            <a href="{{ url_for('submit_decoration') }}" class="btn btn-success me-2">
+                <i class="bi bi-plus-circle me-1"></i>Add Decoration
+            </a>
+            <a href="{{ url_for('submit_cafe') }}" class="btn btn-outline-success">
+                <i class="bi bi-shop me-1"></i>Add Cafe
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-2">Total Decorations</h6>
+                            <h4 class="fw-bold text-primary">{{ total_decorations }}</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-stars text-primary" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-2">Approved Decorations</h6>
+                            <h4 class="fw-bold text-success">{{ approved_decorations }}</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-2">Pending Approval</h6>
+                            <h4 class="fw-bold text-warning">{{ pending_decorations }}</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-clock-history text-warning" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-2">Your Cafes</h6>
+                            <h4 class="fw-bold text-info">{{ total_cafes }}</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-shop text-info" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Your Decorations -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-stars me-2"></i>Your Decorations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if decorations %}
+                    <div class="list-group list-group-flush">
+                        {% for decoration in decorations %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1">{{ decoration.title }}</h6>
+                                    <p class="mb-1 text-muted small">{{ decoration.description[:80] }}...</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-{{ decoration.get_status_badge() }}">
+                                            {{ decoration.status }}
+                                        </span>
+                                        <span class="text-primary fw-bold">₹{{ "%.2f"|format(decoration.price) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-stars text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2 mb-0">No decorations yet</p>
+                        <a href="{{ url_for('submit_decoration') }}" class="btn btn-primary btn-sm mt-2">
+                            <i class="bi bi-plus-circle me-1"></i>Add Your First Decoration
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- Your Cafes -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-shop me-2"></i>Your Cafes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if cafes %}
+                    <div class="list-group list-group-flush">
+                        {% for cafe in cafes %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1">{{ cafe.name }}</h6>
+                                    <p class="mb-1 text-muted small">{{ cafe.area }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-{{ cafe.get_status_badge() }}">
+                                            {{ cafe.status }}
+                                        </span>
+                                        <small class="text-muted">{{ cafe.address[:30] }}...</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-shop text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2 mb-0">No cafes added yet</p>
+                        <a href="{{ url_for('submit_cafe') }}" class="btn btn-success btn-sm mt-2">
+                            <i class="bi bi-plus-circle me-1"></i>Add Your First Cafe
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

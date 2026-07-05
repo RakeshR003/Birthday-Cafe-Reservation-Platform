@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Login - Secure Access{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-danger text-white text-center py-4">
+                    <h3 class="mb-0 fw-bold">
+                        <i class="bi bi-shield-lock me-2"></i>Admin Access
+                    </h3>
+                    <small class="opacity-75">Restricted Area - Authorized Personnel Only</small>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning text-center mb-4">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Security Notice:</strong> This area is monitored.
+                    </div>
+
+                    {% if config.get('DEBUG') %}
+                    <div class="alert alert-info small mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Prototype demo login:</strong> admin@birthdaycafe.com / Admin@123!
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" id="adminLoginForm">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label fw-semibold") }}
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person-badge"></i>
+                                </span>
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), 
+                                    placeholder="admin@birthdaycafe.com", autocomplete="username") }}
+                            </div>
+                            {% for error in form.email.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.password.label(class="form-label fw-semibold") }}
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-key"></i>
+                                </span>
+                                {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), 
+                                    type="password", autocomplete="current-password", id="passwordField") }}
+                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            {% for error in form.password.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-danger btn-lg fw-semibold">
+                                <i class="bi bi-shield-check me-2"></i>Secure Login
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Unauthorized access is prohibited
+                        </small>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <small class="text-muted">
+                        &copy; 2024 Birthday Cafe - Admin System v1.0
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    const passwordField = document.getElementById('passwordField');
+    const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordField.setAttribute('type', type);
+}
+
+// Clear any existing session data on page load
+sessionStorage.clear();
+localStorage.clear();
+
+// Add some security measures
+document.addEventListener('DOMContentLoaded', function() {
+    // Prevent form resubmission on refresh
+    if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+    }
+});
+</script>
+{% endblock %}
